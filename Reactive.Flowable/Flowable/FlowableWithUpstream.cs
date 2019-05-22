@@ -42,10 +42,5 @@ namespace Reactive.Flowable
                 c();
             };
         }
-
-        public IDisposable Subscribe(IObserver<R> observer)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
