@@ -37,8 +37,6 @@ namespace AddToObservable
 
             testf.Merge(testg).Subscribe(x => NonBlockingConsole.WriteLine(x.ToString()));
 
-            //var test = new MergeFlowable<int>(testf, testg);
-            //test.Subscribe(x => Console.WriteLine(x));
             //testf
             //    .Where(x => x % 10 == 0)
             //    //.Delay(1000)
