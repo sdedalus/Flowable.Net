@@ -7,26 +7,17 @@ using System.Text;
 
 namespace Reactive.Flowable.Flowable
 {
-    public class MergeFlowable<TReturn> : IFlowable<TReturn>
+    public class FlowableMerge<TReturn> : IFlowable<TReturn>
     {
         private List<IFlowable<Maybe<TReturn>>> Upstream = new List<IFlowable<Maybe<TReturn>>>();
         Action<Maybe<TReturn>, ISubscriber<TReturn>> filter;
 
-        public MergeFlowable(IFlowable<TReturn> flow1, IFlowable<TReturn> flow2, Action<Maybe<TReturn>, ISubscriber<TReturn>> filter = null)
+        public FlowableMerge(IFlowable<TReturn> flow1, IFlowable<TReturn> flow2, Action<Maybe<TReturn>, ISubscriber<TReturn>> filter = null)
+            : this(new List<IFlowable<TReturn>>() { flow1, flow2 })
         {
-            Upstream.Add(flow1.Select(v => Maybe<TReturn>.AsSome(v)));
-            Upstream.Add(flow2.Select(v => Maybe<TReturn>.AsSome(v)));
-
-            this.filter = filter ?? (
-                (Maybe<TReturn> a, ISubscriber<TReturn> b) => {
-                    if (a is Maybe<TReturn>.Some some)
-                    {
-                        b.OnNext(some.Value);
-                    }
-                });
         }
 
-        public MergeFlowable(IEnumerable<IFlowable<TReturn>> flow, Action<Maybe<TReturn>, ISubscriber<TReturn>> filter = null)
+        public FlowableMerge(IEnumerable<IFlowable<TReturn>> flow, Action<Maybe<TReturn>, ISubscriber<TReturn>> filter = null)
         {
             Upstream.AddRange(flow.Select(f => f.Select(v => Maybe<TReturn>.AsSome(v))));
 
@@ -46,21 +37,20 @@ namespace Reactive.Flowable.Flowable
                 .AsRoundRobbin()
                 .AsFlowable();
 
-            IFlowable<TReturn> fl = new FlowableWithUpstream<ISubscriber<Maybe<TReturn>>, TReturn>(flowN, (x, s) =>
-            {
-                if (x is Maybe<TReturn>.Some some)
-                {
-                    s.OnNext(some.Value);
-                }
-            });
+            IFlowable<TReturn> fl = new FlowableWithUpstream<ISubscriber<Maybe<TReturn>>, TReturn>(
+                flowN, 
+                (x, s) => {
+                    if (x is Maybe<TReturn>.Some some)
+                    {
+                        s.OnNext(some.Value);
+                    }
+                },
+                onRequestFilter: (r, s) => {
+                    s.Request(r);
+                });
 
             fl.Subscribe(subscriber);
             return subscriber;
-        }
-
-        public IDisposable Subscribe(IObserver<TReturn> observer)
-        {
-            throw new NotImplementedException();
         }
 
         private ISubscriber<Maybe<TReturn>> SubscriberToFlow(ISubscriber<TReturn> subscriber, IFlowable<Maybe<TReturn>> flow)
@@ -69,7 +59,7 @@ namespace Reactive.Flowable.Flowable
             var sourceSubscriber = new LambdaSubscriber<Maybe<TReturn>>(
                 onNext: (x,c) => {
                     composed(x);
-                    //c();
+                    c();
                 },
                 onRequest: (r, s) => {
                     s.Request(r);
@@ -83,22 +73,6 @@ namespace Reactive.Flowable.Flowable
         {
             return x => filter(x, subscriber);
         }
-
-        //private IEnumerable<Tx> RoundRobbin<Tx>(IEnumerable<Tx> subscribers)
-        //{
-        //    var enumerator = subscribers.GetEnumerator();
-        //    while (true)
-        //    {
-        //        if (enumerator.MoveNext())
-        //        {
-        //            yield return enumerator.Current;
-        //        }
-        //        else
-        //        {
-        //            enumerator.Reset();
-        //        }
-        //    }
-        //}
     }
 
     public abstract class Maybe<T>

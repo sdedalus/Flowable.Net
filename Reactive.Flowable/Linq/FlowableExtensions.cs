@@ -48,11 +48,6 @@ namespace Reactive.Flowable
                 });
         }
 
-        ////public static IFlowable<T> Merge<T>(this IFlowable<T> first, IFlowable<T> second)
-        ////{
-        ////    return new MergeFlowable<T>(first, second);
-        ////}
-
         public static IFlowable<T> Merge<T>(this IFlowable<T> first, IEnumerable<IFlowable<T>> rest)
         {
             var lst = new List<IFlowable<T>>() { first };
