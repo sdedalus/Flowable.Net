@@ -9,6 +9,7 @@ namespace Reactive.Flowable
     public abstract class SubscriptionBase<T> : ISubscription
     {
         private readonly CancellationTokenSource cancelSource;
+        private readonly ISubscriber<T> subscriber;
         private IEnumerable<Task> readerTasks;
         private ChannelWriter<T> writer;
         private Task writerTask;
@@ -27,12 +28,14 @@ namespace Reactive.Flowable
             writerTask = Task.Factory.StartNew(ProcessRequestAsync);
 
             Request(options.Capacity);
+            this.subscriber = subscriber;
         }
 
         public void Cancel()
         {
             cancelSource.Cancel();
             writer.Complete();
+            subscriber.OnComplete();
         }
 
         public void Request(int n)
