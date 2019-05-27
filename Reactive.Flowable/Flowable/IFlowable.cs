@@ -2,7 +2,7 @@
 
 namespace Reactive.Flowable
 {
-    public interface IFlowable<out T> : IPublisher<T>, IObservable<T>
+    public interface IFlowable<out T> : IPublisher<T>
     {
     }
 }
