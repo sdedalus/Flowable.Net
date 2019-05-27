@@ -52,14 +52,14 @@ namespace Reactive.Flowable
         {
             var lst = new List<IFlowable<T>>() { first };
             lst.AddRange(rest);
-            return new MergeFlowable<T>(lst);
+            return new FlowableMerge<T>(lst);
         }
 
         public static IFlowable<T> Merge<T>(this IFlowable<T> first, params IFlowable<T>[] list)
         {
             var lst = new List<IFlowable<T>>() { first };
             lst.AddRange(list);
-            return new MergeFlowable<T>(lst);
+            return new FlowableMerge<T>(lst);
         }
 
         public static IFlowable<T> AsFlowable<T>(this IEnumerable<T> enumerable)

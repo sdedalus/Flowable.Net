@@ -12,12 +12,12 @@ namespace Reactive.Flowable
         private IEnumerable<Task> readerTasks;
         private ChannelWriter<T> writer;
         private Task writerTask;
-        private int maxParallel = 0;
+        private int demand = 0;
 
         protected SubscriptionBase(ISubscriber<T> subscriber, BoundedChannelOptions options)
         {
             cancelSource = new CancellationTokenSource();
-            maxParallel = options.Capacity;
+            demand = options.Capacity;
 
             Channel<T> channel = Channel.CreateBounded<T>(options);
             writer = channel.Writer;
@@ -37,14 +37,14 @@ namespace Reactive.Flowable
 
         public void Request(int n)
         {
-            Interlocked.Add(ref maxParallel, n);
+            Interlocked.Add(ref demand, n);
         }
 
         protected virtual async Task ProcessRequestAsync()
         {
             while (true)
             {
-                int n = Interlocked.Exchange(ref maxParallel, 0);
+                int n = Interlocked.Exchange(ref demand, 0);
                 for (int i = 0; i < n; i++)
                 {
                     if (AdvanceRead())

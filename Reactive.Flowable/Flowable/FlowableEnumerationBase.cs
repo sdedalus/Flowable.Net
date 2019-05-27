@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Reactive.Flowable
 {
-    public abstract class FlowableEnumerationBase<T> : FlowableBase<T>
+    public abstract class FlowableEnumerationBase<T> : FlowableSourceBase<T>
     {
         protected override ISubscription GetSubscription(ISubscriber<T> subscriber)
         {
