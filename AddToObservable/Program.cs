@@ -12,7 +12,7 @@ namespace AddToObservable
             var testf = new TestFlowable();
             var testg = new TestFlowable();
 
-            testf.Merge(testg).Subscribe(x => Console.WriteLine(x));
+            testf.Merge(testg).Where(x => x % 1000 == 0).Subscribe(x => Console.WriteLine(x));
 
             //var test = new MergeFlowable<int>(testf, testg);
             //test.Subscribe(x => Console.WriteLine(x));

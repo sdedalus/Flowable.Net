@@ -6,6 +6,13 @@ namespace Reactive.Flowable.Test
 {
     public class TestFlowable : FlowableEnumerationBase<int>
     {
+        private readonly int countTo;
+
+        public TestFlowable(int countTo = 10_000_000)
+        {
+            this.countTo = countTo;
+        }
+
         protected override IEnumerator<int> GetEnumerator()
         {
             return en().GetEnumerator();
@@ -14,10 +21,9 @@ namespace Reactive.Flowable.Test
         private IEnumerable<int> en()
         {
             int i = 0;
-            while (i < 10_000_000)
+            while (i < this.countTo)
             {
                 i++;
-                ////Console.WriteLine("yield");
                 yield return i;
             }
         }
