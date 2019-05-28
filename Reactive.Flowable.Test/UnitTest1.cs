@@ -1,53 +1,67 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Reactive.Flowable.Test
 {
     [TestClass]
-    public class UnitTest1
+    public class SubscribeTests
     {
         [TestMethod]
         public async Task testSingleSource()
         {
-            await Task.Factory.StartNew(() =>
-            {
-                bool continueFlag = false;
-                var count = 1000;
-                var testf = new TestFlowable(count);
-                int sum = 0;
-                testf.Subscribe(
-                    onNext: x => sum += x,
-                    onComplete: () => {
-                        Assert.AreEqual((count + 1) * (count / 2), sum);
-                        continueFlag = true;
-                    });
-
-                while (!continueFlag) { };
-            });
+            var num = 1_000_000;
+            Assert
+                .AreEqual(
+                (num + 1) * (num / 2),
+                await Task.Factory.StartNew(val =>
+                {
+                    int count = (int)val;
+                    bool continueFlag = false;
+                    var testf = new TestFlowable(count);
+                    int sum = 0;
+                    var tmp = testf
+                        .Subscribe(
+                        onNext: x => sum += x,
+                        onComplete: () =>
+                        {
+                            continueFlag = true;
+                        });
+                    // this is kind of a hack...
+                    while (!continueFlag) {
+                        Thread.Sleep(10);
+                    };
+                    return sum;
+                }, num));
         }
 
         [TestMethod]
         public async Task testTwoSources()
         {
-            await Task.Factory.StartNew(() =>
-            {
-                bool continueFlag = false;
-                var count = 1000;
-                var testf = new TestFlowable(count);
-                var testg = new TestFlowable(count);
-                int sum = 0;
-                _ = testf
-                    .Merge(testg)
-                    .Subscribe(
-                    onNext: x => sum += x,
-                    onComplete: () =>
-                    {
-                        Assert.AreEqual((count + 1) * (count / 2) * 2, sum);
-                        continueFlag = true;
-                    });
+            var num = 10;
+            Assert
+                .AreEqual(
+                (num + 1) * (num / 2) * 2,  
+                await Task.Factory.StartNew(val =>
+                {
+                    int count = (int)val;
+                    bool continueFlag = false;
+                    var testf = new TestFlowable(count);
+                    var testg = new TestFlowable(count);
+                    int sum = 0;
+                    var tmp = testf
+                        .Merge(testg)
+                        .Subscribe(
+                        onNext: x => sum += x,
+                        onComplete: () =>
+                        {
+                            continueFlag = true;
+                        });
 
-                while (!continueFlag) { };
-            });
+                    while (!continueFlag) { };
+                    return sum;
+                }, num));
         }
     }
 }

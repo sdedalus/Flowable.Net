@@ -19,7 +19,7 @@ namespace Reactive.Flowable.Flowable
 
         public FlowableMerge(IEnumerable<IFlowable<TReturn>> flow, Action<Maybe<TReturn>, ISubscriber<TReturn>> filter = null)
         {
-            Upstream.AddRange(flow.Select(f => f.Select(v => Maybe<TReturn>.AsSome(v))));
+            Upstream.AddRange(flow.Select(f => f.Select(v => Maybe<TReturn>.AsSome(v, f.GetHashCode()))));
 
             this.filter = filter ?? (
                 (Maybe<TReturn> a, ISubscriber<TReturn> b) => {
@@ -63,7 +63,8 @@ namespace Reactive.Flowable.Flowable
                 },
                 onRequest: (r, s) => {
                     s.Request(r);
-                });
+                },
+                onComplete: () => { });
 
             flow.Subscribe(sourceSubscriber);
             return sourceSubscriber;
@@ -77,14 +78,33 @@ namespace Reactive.Flowable.Flowable
 
     public abstract class Maybe<T>
     {
-        public static Maybe<T> AsSome(T value)
+        private readonly int tag;
+
+        public Maybe(int tag)
         {
-            return new Some(value);
+            this.tag = tag;
+        }
+
+        public abstract bool IsSome
+        {
+            get;
+        }
+
+        public int Tag => tag;
+
+        public static Maybe<T> AsSome(T value, int tag)
+        {
+            return new Some(value, tag);
+        }
+
+        public static Maybe<T> AsNone(T value, int tag)
+        {
+            return new None(tag);
         }
 
         public class Some : Maybe<T>
         {
-            public Some(T value)
+            public Some(T value, int tag) : base(tag)
             {
                 Value = value;
             }
@@ -96,12 +116,12 @@ namespace Reactive.Flowable.Flowable
 
         public class None : Maybe<T>
         {
-            public override bool IsSome => false;
-        }
+            public None(int tag) : base(tag)
+            {
 
-        public abstract bool IsSome
-        {
-            get;
+            }
+
+            public override bool IsSome => false;
         }
     }
 }
