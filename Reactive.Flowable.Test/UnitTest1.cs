@@ -23,7 +23,7 @@ namespace Reactive.Flowable.Test
                     int sum = 0;
                     var tmp = testf
                         .Subscribe(
-                        onNext: x => sum += x,
+                        onNext: x => Interlocked.Add(ref sum, x),
                         onComplete: () =>
                         {
                             continueFlag = true;
@@ -52,6 +52,35 @@ namespace Reactive.Flowable.Test
                     int sum = 0;
                     var tmp = testf
                         .Merge(testg)
+                        .Subscribe(
+                        onNext: x => sum += x,
+                        onComplete: () =>
+                        {
+                            continueFlag = true;
+                        });
+
+                    while (!continueFlag) { };
+                    return sum;
+                }, num));
+        }
+
+        [TestMethod]
+        public async Task testThreeSources()
+        {
+            var num = 30;
+            Assert
+                .AreEqual(
+                (num + 1) * (num / 2) * 3,
+                await Task.Factory.StartNew(val =>
+                {
+                    int count = (int)val;
+                    bool continueFlag = false;
+                    var testf = new TestFlowable(count);
+                    var testg = new TestFlowable(count);
+                    var testh = new TestFlowable(count);
+                    int sum = 0;
+                    var tmp = testf
+                        .Merge(testg, testh)
                         .Subscribe(
                         onNext: x => sum += x,
                         onComplete: () =>

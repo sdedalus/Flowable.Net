@@ -6,7 +6,7 @@ namespace Reactive.Flowable.Test
     public class ConsoleSubscriber : Subscriber<string>
     {
         private readonly string label;
-        private ISubscription subscription;
+
         public ConsoleSubscriber(string label)
         {
             this.label = label;

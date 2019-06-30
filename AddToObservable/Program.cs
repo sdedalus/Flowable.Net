@@ -32,10 +32,11 @@ namespace AddToObservable
 
         static void Main(string[] args)
         {
-            var testf = new TestFlowable();
-            var testg = new TestFlowable();
+            var testf = new TestFlowable(10);
+            var testg = new TestFlowable(10);
+            var testh = new TestFlowable(10);
 
-            testf.Merge(testg).Subscribe(x => NonBlockingConsole.WriteLine(x.ToString()));
+            testf.Merge(testg, testh).Subscribe(x => NonBlockingConsole.WriteLine(x.ToString()));
 
             //testf
             //    .Where(x => x % 10 == 0)
