@@ -62,7 +62,7 @@ namespace Reactive.Flowable.Flowable
             int cancelCount = Upstream.Count();
             Action complete = () =>
             {
-                if (Interlocked.Increment(ref cancelations) == cancelCount)
+                if (Interlocked.Increment(ref cancelations) >= cancelCount)
                 {
                     subscriber.OnComplete();
                 }
@@ -71,8 +71,12 @@ namespace Reactive.Flowable.Flowable
             var flowN = Upstream
                 .Select(x => SubscriberToFlow(subscriber, x, complete))
                 .AsRoundRobbin()
-                .Where( x=> x.State == SubscriberState.Subscribed)
-                .AsFlowable();
+                .AsFlowable()
+                .Where( x=> x.State == SubscriberState.Subscribed);
+
+            ////x.State != SubscriberState.Canceled
+            ////             && x.State != SubscriberState.Disposed
+            ////             && x.State != SubscriberState.Completed
 
             IFlowable<TReturn> fl = new FlowableWithUpstream<ISubscriber<Tinternal>, TReturn>(
                 flowN, 

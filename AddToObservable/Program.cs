@@ -36,14 +36,9 @@ namespace AddToObservable
             var testg = new TestFlowable(10);
             var testh = new TestFlowable(10);
 
-            testf.Merge(testg, testh).Subscribe(x => NonBlockingConsole.WriteLine(x.ToString()));
-
-            //testf
-            //    .Where(x => x % 10 == 0)
-            //    //.Delay(1000)
-            //    .Select(x => $"Foo - {x}")
-            //    .Subscribe(x => Console.WriteLine(x));
-
+            testf
+                .Merge(testg, testh)
+                .Subscribe(x => NonBlockingConsole.WriteLine(x.ToString()));
 
             while (true)
             {
@@ -52,8 +47,6 @@ namespace AddToObservable
                     break;
                 }
             }
-
-
         }
     }
 }
